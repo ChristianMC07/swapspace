@@ -1,12 +1,39 @@
 // importing google font for NextJS
 import { Griffy } from 'next/font/google';
-const griffy = Griffy({weight: "400", subsets: ['latin']});
+const griffy = Griffy({ weight: "400", subsets: ['latin'] });
+import { getJSONData } from '@/tools/Toolkit';
+import { Orders, Order } from '@/tools/orders.model';
+import Content from '@/components/Content';
+import { useEffect, useState } from 'react';
+
+
+
 
 export default function Home() {
   // retrieve server sided script
-  const RETRIEVE_SCRIPT:string = "https://www.seanmorrow.ca/_lessons/retrieveOrder.php";
+  const RETRIEVE_SCRIPT: string = "https://www.seanmorrow.ca/_lessons/retrieveOrder.php";
 
-  
+  const [pendingOrders, setPendingOrders] = useState<Orders>({ orders: [] })
+
+  // ------------------------ event handlers
+  const onResponse = (data: Orders) => {
+    console.log(data);
+    setPendingOrders(data);
+
+  }
+
+  const onError = (message: string) => {
+    console.log(`*** Error retrieving pizza order data : ( | ${message}`);
+  }
+
+
+  const getOrders = (e: any) => {
+    //fetch the data from the api
+    getJSONData(RETRIEVE_SCRIPT, onResponse, onError);
+
+  }
+
+
 
 
   // ---------------------------- rendering to DOM
@@ -36,8 +63,8 @@ export default function Home() {
         <div>
           <div className="text-accent text-3xl font-bold mb-2.5">Welcome loyal pizza dispatcher....</div>Click the &quot;Get Orders&quot; button below to view all current orders that need to be delivered.
           <div>
-              <button 
-                className="bg-accent border-none rounded-md p-2.5 text-white hover:bg-greyContent mt-5">Get Orders</button>
+            <button
+              className="bg-accent border-none rounded-md p-2.5 text-white hover:bg-greyContent mt-5" onClick={getOrders}>Get Orders</button>
           </div>
         </div>
         <div className="shrink-0 text-lg text-right text-greyContent hidden md:block">
@@ -52,7 +79,28 @@ export default function Home() {
 
         <div id="output" className="divide-dashed divide-y-2 divide-accent">
 
-          <>No orders retrieved...</>
+          {pendingOrders.orders.length != 0 ?
+
+            <div>
+              {pendingOrders.orders.map(
+                (testOrder: Order, i: number) =>
+                  <Content key={i}
+                    id={testOrder.id}
+                    name={testOrder.name}
+                    address={testOrder.address}
+                    city={testOrder.city}
+                    size={testOrder.size}
+                    toppings={testOrder.toppings}
+                    notes={testOrder.notes}
+                    delivered={testOrder.delivered}
+
+                  />
+              )}
+            </div>
+
+
+            : <>No orders retrieved...</>
+          }
 
         </div>
       </div>
