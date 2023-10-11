@@ -5,6 +5,7 @@ import { getJSONData } from '@/tools/Toolkit';
 import { Orders, Order } from '@/tools/orders.model';
 import Content from '@/components/Content';
 import { useEffect, useState } from 'react';
+import LoadingOverlay from '@/components/LoadingOverlay';
 
 
 
@@ -13,12 +14,18 @@ export default function Home() {
   // retrieve server sided script
   const RETRIEVE_SCRIPT: string = "https://www.seanmorrow.ca/_lessons/retrieveOrder.php";
 
+  // ------------------------------------- state variables
+
   const [pendingOrders, setPendingOrders] = useState<Orders>({ orders: [] })
+  const [showSpinner, setShowSpinner] = useState<boolean>(false);
+
+  // ----------------------------------- useEffects
 
   // ------------------------ event handlers
   const onResponse = (data: Orders) => {
     console.log(data);
     setPendingOrders(data);
+    setShowSpinner(false);
 
   }
 
@@ -27,8 +34,9 @@ export default function Home() {
   }
 
 
-  const getOrders = (e: any) => {
+  const getOrders = () => {
     //fetch the data from the api
+    setShowSpinner(true);
     getJSONData(RETRIEVE_SCRIPT, onResponse, onError);
 
   }
@@ -75,33 +83,39 @@ export default function Home() {
         </div>
       </aside>
 
-      <div className="bg-greyAccent p-10">
 
-        <div id="output" className="divide-dashed divide-y-2 divide-accent">
+      <div>
+        <>
+          <LoadingOverlay bgColor={"#b91c1c"} overlayOn={showSpinner} spinnerOn={true} spinnerColor={"#FFFFFF"} />
+        </>
+        <div className="bg-greyAccent p-10">
 
-          {pendingOrders.orders.length != 0 ?
+          <div id="output" className="divide-dashed divide-y-2 divide-accent">
 
-            <div>
-              {pendingOrders.orders.map(
-                (testOrder: Order, i: number) =>
-                  <Content key={i}
-                    id={testOrder.id}
-                    name={testOrder.name}
-                    address={testOrder.address}
-                    city={testOrder.city}
-                    size={testOrder.size}
-                    toppings={testOrder.toppings}
-                    notes={testOrder.notes}
-                    delivered={testOrder.delivered}
+            {pendingOrders.orders.length != 0 ?
 
-                  />
-              )}
-            </div>
+              <div>
+                {pendingOrders.orders.map(
+                  (testOrder: Order, i: number) =>
+                    <Content key={i}
+                      id={testOrder.id}
+                      name={testOrder.name}
+                      address={testOrder.address}
+                      city={testOrder.city}
+                      size={testOrder.size}
+                      toppings={testOrder.toppings}
+                      notes={testOrder.notes}
+                      delivered={testOrder.delivered}
+
+                    />
+                )}
+              </div>
 
 
-            : <>No orders retrieved...</>
-          }
+              : <>No orders retrieved...</>
+            }
 
+          </div>
         </div>
       </div>
     </main>
